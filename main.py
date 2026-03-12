@@ -1,3 +1,4 @@
+# s/.png/,[MOVEHERE].png after sending that image at http://40.160.3.200:8080/api/moves/e4.png
 import chess
 import chess.svg
 import cairosvg
@@ -20,6 +21,22 @@ async def get_chess_board(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid move: {str(e)}")
 
+    if board.is_game_over():
+        try:
+            with open("game_over.png", "rb") as f:
+                image_data = f.read()
+            return Response(
+                content=image_data,
+                media_type="image/png",
+                headers={
+                    "Cache-Control": "public, max-age=3600",
+                    "Content-Disposition": "inline",
+                    "X-Content-Type-Options": "nosniff",
+                },
+            )
+        except FileNotFoundError:
+            return Response()
+
     board_view = board.turn
 
     board_svg = chess.svg.board(
@@ -30,7 +47,6 @@ async def get_chess_board(
         check=board.king(board.turn) if board.is_check() else None,
     )
 
-    # Convert SVG to PNG
     board_png = cairosvg.svg2png(bytestring=board_svg.encode("utf-8"))
 
     return Response(
