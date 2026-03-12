@@ -9,4 +9,5 @@ dependencies = [
     "httpx>=0.28.1",
     "python-chess>=1.999",
     "uvicorn>=0.41.0",
+    "cairosvg>=2.7.0",
 ]

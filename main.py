@@ -1,11 +1,12 @@
 import chess
 import chess.svg
-from fastapi import FastAPI, HTTPException, Response, Query
+import cairosvg
+from fastapi import FastAPI, HTTPException, Response
 
 app = FastAPI()
 
 
-@app.get("/api/moves/{moves_str}")
+@app.get("/api/moves/{moves_str}.png")
 async def get_chess_board(
     moves_str: str,
 ):
@@ -29,10 +30,17 @@ async def get_chess_board(
         check=board.king(board.turn) if board.is_check() else None,
     )
 
+    # Convert SVG to PNG
+    board_png = cairosvg.svg2png(bytestring=board_svg.encode("utf-8"))
+
     return Response(
-        content=board_svg,
-        media_type="image/svg+xml",
-        headers={"Cache-Control": "public, max-age=3600"},
+        content=board_png,
+        media_type="image/png",
+        headers={
+            "Cache-Control": "public, max-age=3600",
+            "Content-Disposition": "inline",
+            "X-Content-Type-Options": "nosniff",
+        },
     )
 
 
